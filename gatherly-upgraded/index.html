@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GatherUp — Event Planner, Upgraded</title>
+<meta name="theme-color" content="#7c3aed">
+<meta name="description" content="GatherUp: plan birthdays, weddings, fests and community events. Checklist, budget charts, guests & RSVP, vendors, day-of timeline and a Gemini AI planner. No login, works offline.">
+<style>
+:root{--bg:#f6f5f2;--surface:#fff;--surface2:#f0eee9;--text:#1c2433;--muted:#667085;--border:#e4e1d8;--accent:#7c3aed;--accent2:#0ea5e9;--green:#16a34a;--amber:#d97706;--red:#dc2626;--radius:16px;--shadow:0 6px 24px rgba(20,20,60,.08)}
+[data-theme="dark"]{--bg:#0d1117;--surface:#161b22;--surface2:#1f2630;--text:#e6edf3;--muted:#9aa7b8;--border:#2b3442;--accent:#a78bfa;--accent2:#38bdf8;--shadow:0 6px 24px rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent2);border-color:var(--accent2)}
+label{font-size:13px;font-weight:700;color:var(--muted);display:block;margin:10px 0 5px}
+.app{display:flex;min-height:100vh}
+aside{width:280px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:18px 14px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.brand span{color:var(--accent)}
+.brand small{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.4px}
+.side-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);margin:20px 4px 8px;text-transform:uppercase}
+.ev-item{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:12px;padding:10px 12px;margin-bottom:4px;color:var(--text)}
+.ev-item:hover{background:var(--surface2)}
+.ev-item.active{background:#ede9fe;border-color:#c4b5fd}
+[data-theme="dark"] .ev-item.active{background:#2e2447;border-color:#6d28d9}
+.ev-ico{font-size:20px}
+.ev-item b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-item small{color:var(--muted);font-size:12px}
+.ev-item .del{margin-left:auto;color:var(--muted);background:none;border:0;font-size:16px;padding:2px 6px}
+main{flex:1;max-width:980px;margin:0 auto;padding:20px 18px 60px;width:100%}
+.topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.topbar h1{font-size:26px;letter-spacing:-.5px;flex:1;min-width:200px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;background:var(--accent);color:#fff}
+.btn:hover{filter:brightness(1.08)}
+.btn-ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-sm{padding:7px 12px;font-size:13px}
+.btn-danger{background:var(--red);color:#fff}
+.hero{background:linear-gradient(135deg,#7c3aed,#0ea5e9);color:#fff;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+.hero h2{font-size:clamp(24px,5vw,34px);line-height:1.15;letter-spacing:-.5px}
+.hero p{opacity:.92;margin-top:8px;max-width:640px}
+.countdown{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.cd{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:10px 16px;text-align:center;min-width:78px}
+.cd b{font-size:24px;display:block}
+.cd span{font-size:12px;opacity:.85}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.stat b{font-size:22px;display:block}
+.stat span{color:var(--muted);font-size:13px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:16px;box-shadow:var(--shadow)}
+.card h2{font-size:20px;margin-bottom:4px}
+.card h3{font-size:16px;margin:16px 0 6px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:12px}
+.progress{height:12px;background:var(--surface2);border-radius:999px;overflow:hidden;margin:10px 0}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1;min-width:140px}
+.row .btn,.row .btn-ghost{flex:0 0 auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.app{flex-direction:column}aside{width:100%;height:auto;position:static;border-right:0;border-bottom:1px solid var(--border)}}
+.task{display:flex;gap:10px;align-items:flex-start;padding:11px 4px;border-bottom:1px solid var(--border)}
+.task:last-child{border-bottom:0}
+.task input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex-shrink:0;accent-color:var(--accent)}
+.task.done b{text-decoration:line-through;color:var(--muted)}
+.task small{color:var(--muted);display:block;font-size:12px}
+.task .x{margin-left:auto;background:none;border:0;color:var(--muted);font-size:18px}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.pill.must{background:#fee2e2;color:#991b1b}.pill.nice{background:#fef3c7;color:#92400e}.pill.over{background:#fee2e2;color:#991b1b}.pill.ok{background:#dcfce7;color:#166534}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left}
+th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.num{text-align:right}
+.bar{height:10px;background:var(--surface2);border-radius:999px;overflow:hidden;min-width:90px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar.over i{background:var(--red)}
+.donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.legend{font-size:13px}
+.legend div{margin:4px 0}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.guest{display:flex;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.guest b{flex:1;min-width:120px}
+select.rsvp{width:auto;min-width:110px;padding:6px 8px}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:13px}
+.ai-box{background:var(--surface2);border:1px dashed var(--border);border-radius:12px;padding:14px;font-size:14px;white-space:pre-wrap;margin-top:12px}
+.ai-box:empty{display:none}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;display:none;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;z-index:40;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal .panel{background:var(--surface);border-radius:16px;padding:22px;max-width:560px;width:100%;margin-top:30px}
+.hidden{display:none!important}
+.tl-item{display:flex;gap:12px;padding:10px 4px;border-bottom:1px solid var(--border)}
+.tl-time{font-weight:800;color:var(--accent);min-width:70px}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:28px}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">GatherUp<span>.</span><small>EVENT PLANNER — UPGRADED</small></div>
+  <button class="btn" style="width:100%;margin-top:16px" onclick="openEventDialog()">+ New event</button>
+  <div class="side-label">Your events</div>
+  <div id="eventList"></div>
+  <div class="side-label">Tools</div>
+  <div class="row" style="flex-direction:column;align-items:stretch">
+    <button class="btn-ghost btn" onclick="exportAll()">⬇ Export all (JSON)</button>
+    <button class="btn-ghost btn" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+    <input type="file" id="importFile" accept="application/json" class="hidden" onchange="importAll(event)">
+    <button class="btn-ghost btn" onclick="shareEvent()">🔗 Copy shareable link</button>
+    <button class="btn-ghost btn" onclick="toggleTheme()">🌙 / ☀️ Dark / light</button>
+  </div>
+  <p class="sub" style="margin-top:16px">Everything is saved in this browser only. No account, no server. Your Gemini key never leaves this device.</p>
+</aside>
+<main id="main"></main>
+</div>
+
+<div class="modal" id="eventModal"><div class="panel">
+  <h2 id="eventModalTitle">New event</h2>
+  <label>Event name</label><input id="fName" placeholder="e.g. Aisha's 21st Birthday">
+  <div class="row">
+    <div><label>Type</label><select id="fKind"><option>Birthday</option><option>Wedding</option><option>Community event</option><option>College fest</option><option>Baby shower</option><option>Other celebration</option></select></div>
+    <div><label>Date</label><input type="date" id="fDate"></div>
+  </div>
+  <div class="row">
+    <div><label>Location</label><input id="fLocation" placeholder="Venue / city"></div>
+    <div><label>Total budget (₹)</label><input type="number" id="fBudget" min="0" placeholder="50000"></div>
+  </div>
+  <label>Expected guests</label><input type="number" id="fGuests" min="0" placeholder="100">
+  <div class="row" style="margin-top:16px"><button class="btn" onclick="saveEventDialog()">Save event</button><button class="btn-ghost btn" onclick="closeModal('eventModal')">Cancel</button></div>
+</div></div>
+
+<div class="modal" id="taskModal"><div class="panel">
+  <h2>Add task</h2>
+  <label>Task</label><input id="tTitle" placeholder="e.g. Order the cake">
+  <div class="row">
+    <div><label>Due (days before event)</label><input type="number" id="tDue" value="7" min="0"></div>
+    <div><label>Priority</label><select id="tPriority"><option>Must do</option><option>Nice to do</option></select></div>
+  </div>
+  <div class="row" style="margin-top:16px"><button class="btn" onclick="saveTask()">Add task</button><button class="btn-ghost btn" onclick="closeModal('taskModal')">Cancel</button></div>
+</div></div>
+
+<div class="modal" id="vendorModal"><div class="panel">
+  <h2>Add vendor</h2>
+  <label>Vendor name</label><input id="vName" placeholder="e.g. Sharma Caterers">
+  <div class="row">
+    <div><label>Category</label><select id="vCat"><option>Venue</option><option>Food &amp; Drinks</option><option>Decor</option><option>Music / DJ</option><option>Photography</option><option>Outfits</option><option>Other</option></select></div>
+    <div><label>Cost (₹)</label><input type="number" id="vCost" min="0" placeholder="15000"></div>
+  </div>
+  <div class="row" style="margin-top:16px"><button class="btn" onclick="saveVendor()">Add vendor</button><button class="btn-ghost btn" onclick="closeModal('vendorModal')">Cancel</button></div>
+</div></div>
+
+<div class="modal" id="guestModal"><div class="panel">
+  <h2>Add guest</h2>
+  <label>Guest name</label><input id="gName" placeholder="e.g. Rohan Sharma">
+  <div class="row">
+    <div><label>RSVP</label><select id="gRsvp"><option>Yes</option><option>Maybe</option><option>No</option></select></div>
+    <div><label>Meal</label><select id="gMeal"><option>Veg</option><option>Non-veg</option><option>Vegan</option><option>Jain</option></select></div>
+  </div>
+  <div class="row" style="margin-top:16px"><button class="btn" onclick="saveGuest()">Add guest</button><button class="btn-ghost btn" onclick="closeModal('guestModal')">Cancel</button></div>
+</div></div>
+
+<div class="modal" id="momentModal"><div class="panel">
+  <h2>Add day-of moment</h2>
+  <div class="row">
+    <div><label>Time</label><input type="time" id="mTime" value="18:00"></div>
+    <div><label>Title</label><input id="mTitle" placeholder="e.g. Cake cutting"></div>
+  </div>
+  <div class="row" style="margin-top:16px"><button class="btn" onclick="saveMoment()">Add moment</button><button class="btn-ghost btn" onclick="closeModal('momentModal')">Cancel</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ---------- GatherUp: original upgrade of the event-planner idea ----------
+// No code copied from Tarun's Gatherly. All logic below is original.
+const $=id=>document.getElementById(id);
+const LS_KEY='gatherup_events_v1', KEY_KEY='gatherup_gemini_key';
+const KINDS={Birthday:'🎂',Wedding:'💍','Community event':'🤝','College fest':'🎓','Baby shower':'👶','Other celebration':'🎉'};
+const CATS=['Venue','Food & Drinks','Decor','Music / DJ','Photography','Outfits','Gifts','Misc'];
+const CAT_COLORS=['#7c3aed','#0ea5e9','#f59e0b','#16a34a','#ec4899','#6366f1','#14b8a6','#94a3b8'];
+const SPLITS={Birthday:{'Venue':25,'Food & Drinks':30,'Decor':15,'Music / DJ':8,'Photography':10,'Outfits':5,'Gifts':4,'Misc':3},
+Wedding:{'Venue':30,'Food & Drinks':28,'Decor':14,'Music / DJ':5,'Photography':10,'Outfits':8,'Gifts':2,'Misc':3},
+'Community event':{'Venue':20,'Food & Drinks':35,'Decor':12,'Music / DJ':10,'Photography':8,'Outfits':2,'Gifts':3,'Misc':10},
+'College fest':{'Venue':15,'Food & Drinks':20,'Decor':15,'Music / DJ':20,'Photography':8,'Outfits':2,'Gifts':5,'Misc':15},
+'Baby shower':{'Venue':22,'Food & Drinks':30,'Decor':18,'Music / DJ':5,'Photography':10,'Outfits':5,'Gifts':7,'Misc':3},
+'Other celebration':{'Venue':25,'Food & Drinks':30,'Decor':15,'Music / DJ':8,'Photography':8,'Outfits':5,'Gifts':4,'Misc':5}};
+const TASK_TEMPLATES={
+Birthday:[['Book the venue',21,'Must do'],['Send invitations',14,'Must do'],['Order the cake',7,'Must do'],['Buy decorations & balloons',5,'Nice to do'],['Make the playlist',3,'Nice to do'],['Confirm final guest count',3,'Must do'],['Buy return gifts',4,'Nice to do'],['Charge camera / phone',1,'Must do'],['Set up venue & photo corner',0,'Must do']],
+Wedding:[['Book venue & lock date',120,'Must do'],['Book caterer & tasting',90,'Must do'],['Book photographer & videographer',90,'Must do'],['Send invitations',45,'Must do'],['Finalise outfits',30,'Must do'],['Book DJ / live music',30,'Nice to do'],['Plan ceremony order',21,'Must do'],['Confirm guest list & seating',14,'Must do'],['Trial makeup / hair',7,'Nice to do'],['Rehearsal',2,'Must do'],['Decor & stage setup',1,'Must do']],
+'Community event':[['Book venue / ground',30,'Must do'],['Get permissions if needed',21,'Must do'],['Invite the community',14,'Must do'],['Arrange food stalls',10,'Must do'],['Plan games & activities',7,'Nice to do'],['Arrange sound system',5,'Must do'],['Confirm volunteers',3,'Must do'],['Setup & cleanup plan',1,'Must do']],
+'College fest':[['Form organising team',45,'Must do'],['Book auditorium / ground',30,'Must do'],['Invite chief guest & judges',21,'Must do'],['Open registrations',21,'Must do'],['Book sound, lights & stage',14,'Must do'],['Arrange sponsors',14,'Must do'],['Plan event schedule',7,'Must do'],['Print banners & passes',5,'Nice to do'],['Rehearse performances',2,'Must do'],['Final sound check',0,'Must do']],
+'Baby shower':[['Pick a date & venue',21,'Must do'],['Send invitations',14,'Must do'],['Plan games & activities',10,'Nice to do'],['Order cake & snacks',7,'Must do'],['Buy decorations',5,'Nice to do'],['Arrange gifts for mom-to-be',5,'Nice to do'],['Confirm guests',3,'Must do'],['Setup on the day',0,'Must do']],
+'Other celebration':[['Book the venue',21,'Must do'],['Send invitations',14,'Must do'],['Arrange food & drinks',10,'Must do'],['Buy decorations',5,'Nice to do'],['Make a playlist',3,'Nice to do'],['Confirm guests',3,'Must do'],['Setup on the day',0,'Must do']]};
+const VENDOR_TEMPLATES={Birthday:[['Cake shop','Food & Drinks',4000],['Decorator','Decor',6000],['DJ','Music / DJ',5000]],
+Wedding:[['Caterer','Food & Drinks',0],['Photographer','Photography',0],['Decorator','Decor',0]],
+'Community event':[['Caterer','Food & Drinks',0],['Sound rental','Music / DJ',0]],
+'College fest':[['Sound & lights','Music / DJ',0],['Stage setup','Venue',0]],
+'Baby shower':[['Cake shop','Food & Drinks',3000],['Decorator','Decor',4000]],
+'Other celebration':[['Caterer','Food & Drinks',0],['Decorator','Decor',0]]};
+const MOMENT_TEMPLATES={Birthday:[['17:00','Guests arrive & welcome drinks'],['18:00','Games & fun activities'],['19:00','Cake cutting'],['19:30','Dinner'],['20:30','Dance & photos'],['21:30','Return gifts & goodbye']],
+Wedding:[['10:00','Baraat / welcome'],['11:00','Ceremony'],['13:00','Lunch'],['16:00','Photos with family'],['19:00','Reception & dinner'],['21:00','Dance & farewell']],
+'Community event':[['09:00','Setup & registration'],['10:00','Opening & welcome'],['11:00','Games & activities'],['13:00','Lunch'],['15:00','Prizes & closing']],
+'College fest':[['09:00','Inauguration'],['10:00','Competitions begin'],['13:00','Lunch break'],['14:00','Cultural performances'],['17:00','Star night'],['19:00','Prize distribution']],
+'Baby shower':[['11:00','Welcome & games'],['12:30','Lunch'],['13:30','Cake cutting & gifts'],['15:00','Photos & goodbye']],
+'Other celebration':[['18:00','Guests arrive'],['19:00','Main celebration'],['20:00','Dinner'],['21:00','Photos & goodbye']]};
+const OFFLINE_THEMES={Birthday:['Neon Glow Party','Retro Bollywood Night','Garden Picnic Bash'],Wedding:['Royal Palace','Pastel Garden','Destination Beach'],
+'Community event':['Street Food Carnival','Sports & Games Day','Clean & Green Fair'],'College fest':['Techno Fusion','Cultural Carnival','Retro Rewind'],
+'Baby shower':['Pastel Clouds','Jungle Safari','Twinkle Stars'],'Other celebration':['Golden Evening','Colour Splash','Classic Elegance']};
+
+let state={events:[],activeId:null};
+let editingId=null;
+function uid(){return 'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function inr(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){}}
+function load(){
+  try{const raw=localStorage.getItem(LS_KEY);if(raw){const parsed=JSON.parse(raw);state={events:(parsed.events||[]).map(sanitizeEvent).filter(Boolean),activeId:parsed.activeId||null};return}}catch(e){}
+  state={events:[],activeId:null};
+}
+function active(){return state.events.find(e=>e.id===state.activeId)||state.events[0]||null}
+// Normalise an event loaded from storage / import / share link so render() never crashes on missing fields.
+function sanitizeEvent(ev){
+  if(!ev||typeof ev!=='object')return null;
+  ev.id=ev.id||uid(); ev.name=ev.name||'My celebration'; ev.kind=KINDS[ev.kind]?ev.kind:'Other celebration';
+  ev.date=ev.date||new Date(Date.now()+14*864e5).toISOString().slice(0,10);
+  ev.location=ev.location||''; ev.budget=Number(ev.budget)||0; ev.expectedGuests=Number(ev.expectedGuests)||0;
+  ev.tasks=Array.isArray(ev.tasks)?ev.tasks:[]; ev.guests=Array.isArray(ev.guests)?ev.guests:[];
+  ev.vendors=Array.isArray(ev.vendors)?ev.vendors:[]; ev.timeline=Array.isArray(ev.timeline)?ev.timeline:[];
+  ev.aiPlan=ev.aiPlan||'';
+  ev.budgetCats=ev.budgetCats||{};
+  CATS.forEach(c=>{const b=ev.budgetCats[c]||{};ev.budgetCats[c]={planned:Number(b.planned)||0,actual:Number(b.actual)||0}});
+  ev.tasks.forEach(t=>{t.id=t.id||uid();t.title=t.title||'Task';t.dueDays=Number(t.dueDays)||0;t.priority=t.priority||'Nice to do';t.done=!!t.done});
+  ev.guests.forEach(g=>{g.id=g.id||uid();g.name=g.name||'Guest';g.rsvp=['Yes','Maybe','No'].includes(g.rsvp)?g.rsvp:'Maybe';g.meal=g.meal||'Veg'});
+  ev.vendors.forEach(v=>{v.id=v.id||uid();v.name=v.name||'Vendor';v.cat=v.cat||'Other';v.cost=Number(v.cost)||0;v.booked=!!v.booked});
+  ev.timeline.forEach(m=>{m.id=m.id||uid();m.time=m.time||'18:00';m.title=m.title||'Moment'});
+  return ev;
+}
+function makeEvent(name,kind,date,location,budget,guestCount){
+  const ev={id:uid(),name:name||'My celebration',kind:kind||'Birthday',date:date||new Date(Date.now()+14*864e5).toISOString().slice(0,10),location:location||'',budget:(budget===undefined||budget===null||budget==='')?50000:Number(budget),expectedGuests:(guestCount===undefined||guestCount===null||guestCount==='')?50:Number(guestCount),
+  tasks:[],guests:[],vendors:[],timeline:[],aiPlan:'',createdAt:Date.now()};
+  (TASK_TEMPLATES[kind]||TASK_TEMPLATES['Other celebration']).forEach(([t,d,p])=>ev.tasks.push({id:uid(),title:t,dueDays:d,priority:p,done:false}));
+  (VENDOR_TEMPLATES[kind]||[]).forEach(([n,c,co])=>ev.vendors.push({id:uid(),name:n,cat:c,cost:co,booked:false}));
+  (MOMENT_TEMPLATES[kind]||MOMENT_TEMPLATES['Other celebration']).forEach(([time,title])=>ev.timeline.push({id:uid(),time,title}));
+  ev.budgetCats={};CATS.forEach(c=>ev.budgetCats[c]={planned:Math.round(ev.budget*(SPLITS[kind]||SPLITS['Other celebration'])[c]/100),actual:0});
+  return ev;
+}
+function daysUntil(dateStr){
+  if(!dateStr)return null;
+  const d=new Date(dateStr+'T00:00:00'), now=new Date(); now.setHours(0,0,0,0);
+  return Math.round((d-now)/864e5);
+}
+function dueDate(ev,task){
+  if(!ev.date)return '';
+  const d=new Date(ev.date+'T00:00:00'); d.setDate(d.getDate()-task.dueDays);
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function taskDone(ev){return ev.tasks.filter(t=>t.done).length}
+function catActual(ev){return CATS.reduce((s,c)=>s+(ev.budgetCats[c]?ev.budgetCats[c].actual||0:0),0)}
+function vendorBookedTotal(ev){return ev.vendors.filter(v=>v.booked).reduce((s,v)=>s+(Number(v.cost)||0),0)}
+function totalSpent(ev){return catActual(ev)+vendorBookedTotal(ev)}
+function confirmedGuests(ev){return ev.guests.filter(g=>g.rsvp==='Yes').length}
+
+// ---------- rendering ----------
+function render(){
+  const ev=active(); if(ev) state.activeId=ev.id;
+  $('eventList').innerHTML=state.events.map(e=>{
+    const d=daysUntil(e.date);
+    return `<button class="ev-item ${e.id===state.activeId?'active':''}" onclick="setActive('${e.id}')">
+      <span class="ev-ico">${KINDS[e.kind]||'🎉'}</span><span style="min-width:0"><b>${esc(e.name)}</b><small>${esc(e.kind)} · ${d==null?'':d<0?Math.abs(d)+'d ago':d===0?'Today':d+'d left'}</small></span>
+      <span class="del" onclick="event.stopPropagation();deleteEvent('${e.id}')" title="Delete">×</span></button>`;
+  }).join('')||'<p class="sub">No events yet — create your first one above.</p>';
+  const m=$('main');
+  if(!ev){m.innerHTML=`<div class="card"><h2>Welcome to GatherUp 🎉</h2><p class="sub">Plan birthdays, weddings, fests and community events — checklist, budget, guests, vendors, timeline and an AI planner, all in one page. No login, no server.</p><button class="btn" onclick="openEventDialog()">+ Create your first event</button></div>`;return;}
+  const du=daysUntil(ev.date);
+  const done=taskDone(ev), total=ev.tasks.length, pct=total?Math.round(done/total*100):0;
+  const spent=totalSpent(ev), remaining=ev.budget-spent;
+  const conf=confirmedGuests(ev), perGuest=conf?Math.round(ev.budget/conf):(ev.expectedGuests?Math.round(ev.budget/ev.expectedGuests):0);
+  const yes=ev.guests.filter(g=>g.rsvp==='Yes').length, maybe=ev.guests.filter(g=>g.rsvp==='Maybe').length, no=ev.guests.filter(g=>g.rsvp==='No').length;
+  const meals={};ev.guests.forEach(g=>{if(g.rsvp==='Yes')meals[g.meal]=(meals[g.meal]||0)+1});
+  const cd = du==null?'':du<0?`<div class="cd"><b>Done</b><span>${Math.abs(du)} days ago</span></div>`:du===0?`<div class="cd"><b>Today!</b><span>event day</span></div>`:
+    `<div class="cd"><b>${du}</b><span>days left</span></div><div class="cd"><b>${Math.floor(du/7)}</b><span>weeks</span></div><div class="cd"><b>${du*24}</b><span>hours</span></div>`;
+  m.innerHTML=`
+  <div class="topbar"><h1>${KINDS[ev.kind]||'🎉'} ${esc(ev.name)}</h1>
+    <button class="btn-ghost btn btn-sm" onclick="openEventDialog(true)">✏️ Edit</button>
+    <button class="btn-ghost btn btn-sm" onclick="shareEvent()">🔗 Share</button></div>
+  <div class="hero"><h2>${esc(ev.kind)} · ${ev.date?new Date(ev.date+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'No date set'}</h2>
+    <p>${ev.location?'📍 '+esc(ev.location)+' · ':''}${ev.expectedGuests} expected guests · Budget ${inr(ev.budget)}</p>
+    <div class="countdown">${cd}</div></div>
+  <div class="stats">
+    <div class="stat"><b>${pct}%</b><span>checklist done (${done}/${total})</span></div>
+    <div class="stat"><b>${inr(spent)}</b><span>spent of ${inr(ev.budget)}</span></div>
+    <div class="stat"><b>${remaining<0?'⚠️ '+inr(Math.abs(remaining))+' over':inr(remaining)}</b><span>${remaining<0?'over budget!':'remaining'}</span></div>
+    <div class="stat"><b>${yes} ✅ · ${maybe} 🤔 · ${no} ❌</b><span>RSVP (${ev.guests.length} guests listed)</span></div>
+    <div class="stat"><b>${inr(perGuest)}</b><span>per confirmed guest</span></div>
+  </div>
+
+  <section class="card" id="checklist"><h2>✅ Smart checklist</h2>
+    <p class="sub">Auto-generated for a ${esc(ev.kind.toLowerCase())}, with due dates counted back from event day.</p>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    <p class="sub">${done} of ${total} done · ${pct}%</p>
+    ${ev.tasks.slice().sort((a,b)=>b.dueDays-a.dueDays).map(t=>`<div class="task ${t.done?'done':''}">
+      <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')">
+      <div><b>${esc(t.title)}</b><small>Due ${dueDate(ev,t)} · ${t.dueDays===0?'event day':t.dueDays+' days before'}</small></div>
+      <span class="pill ${t.priority==='Must do'?'must':'nice'}">${t.priority}</span>
+      <button class="x" onclick="deleteTask('${t.id}')">×</button></div>`).join('')||'<p class="sub">No tasks yet.</p>'}
+    <div class="row" style="margin-top:12px"><button class="btn btn-sm" onclick="openModal('taskModal')">+ Add task</button></div>
+  </section>
+
+  <section class="card" id="budget"><h2>💰 Budget planner</h2>
+    <p class="sub">Planned split is auto-set for a ${esc(ev.kind.toLowerCase())}. Edit planned / actual per category — the donut and warnings update live.</p>
+    <div class="donut-wrap">${donutSVG(ev)}<div class="legend">${CATS.map((c,i)=>`<div><span class="dot" style="background:${CAT_COLORS[i]}"></span>${c}: <b>${inr(ev.budgetCats[c].actual||0)}</b> / ${inr(ev.budgetCats[c].planned||0)}</div>`).join('')}</div></div>
+    <table><tr><th>Category</th><th class="num">Planned</th><th class="num">Actual</th><th></th><th class="num">Status</th></tr>
+    ${CATS.map(c=>{const b=ev.budgetCats[c]||{planned:0,actual:0};const over=b.actual>b.planned&&b.planned>0;
+      return `<tr><td>${c}</td><td class="num"><input type="number" style="width:90px;padding:5px" value="${b.planned}" onchange="setCat('${c}','planned',this.value)"></td>
+      <td class="num"><input type="number" style="width:90px;padding:5px" value="${b.actual}" onchange="setCat('${c}','actual',this.value)"></td>
+      <td><div class="bar ${over?'over':''}"><i style="width:${b.planned?Math.min(100,Math.round(b.actual/b.planned*100)):0}%"></i></div></td>
+      <td class="num">${over?'<span class="pill over">⚠️ over by '+inr(b.actual-b.planned)+'</span>':'<span class="pill ok">on track</span>'}</td></tr>`}).join('')}
+    <tr><td><b>Total (categories)</b></td><td class="num"><b>${inr(ev.budget)}</b></td><td class="num"><b>${inr(catActual(ev))}</b></td><td></td><td class="num"></td></tr>
+    <tr><td><b>Vendors booked</b></td><td class="num"></td><td class="num"><b>${inr(vendorBookedTotal(ev))}</b></td><td></td><td class="num"></td></tr>
+    <tr><td><b>Grand total spent</b></td><td class="num"></td><td class="num"><b>${inr(spent)}</b></td><td></td><td class="num">${remaining<0?'<span class="pill over">⚠️ Over budget</span>':'<span class="pill ok">'+inr(remaining)+' left</span>'}</td></tr></table>
+  </section>
+
+  <div class="grid2">
+  <section class="card" id="guests"><h2>👥 Guests &amp; RSVP</h2>
+    <p class="sub">${yes} coming · ${maybe} maybe · ${no} can't come · ${ev.guests.length} listed</p>
+    <p class="sub">Meals (confirmed): ${Object.keys(meals).length?Object.entries(meals).map(([k,v])=>k+' '+v).join(' · '):'—'}</p>
+    ${ev.guests.map(g=>`<div class="guest"><b>${esc(g.name)}</b>
+      <select class="rsvp" onchange="setRsvp('${g.id}',this.value)"><option ${g.rsvp==='Yes'?'selected':''}>Yes</option><option ${g.rsvp==='Maybe'?'selected':''}>Maybe</option><option ${g.rsvp==='No'?'selected':''}>No</option></select>
+      <span class="chip">${esc(g.meal)}</span><button class="x" style="background:none;border:0;color:var(--muted);font-size:18px" onclick="deleteGuest('${g.id}')">×</button></div>`).join('')||'<p class="sub">No guests added yet.</p>'}
+    <div class="row" style="margin-top:12px"><button class="btn btn-sm" onclick="openModal('guestModal')">+ Add guest</button>
+    <button class="btn-ghost btn btn-sm" onclick="copyInvite()">📋 Copy invite message</button></div>
+  </section>
+
+  <section class="card" id="vendors"><h2>🏪 Vendors</h2>
+    <p class="sub">${ev.vendors.filter(v=>v.booked).length} of ${ev.vendors.length} booked · Booked total ${inr(vendorBookedTotal(ev))}</p>
+    ${ev.vendors.map(v=>`<div class="task"><input type="checkbox" ${v.booked?'checked':''} onchange="toggleVendor('${v.id}')">
+      <div><b>${esc(v.name)}</b><small>${esc(v.cat)} · ${inr(v.cost)}</small></div>
+      <span class="pill ${v.booked?'ok':'nice'}">${v.booked?'Booked':'To book'}</span>
+      <button class="x" onclick="deleteVendor('${v.id}')">×</button></div>`).join('')||'<p class="sub">No vendors yet.</p>'}
+    <div class="row" style="margin-top:12px"><button class="btn btn-sm" onclick="openModal('vendorModal')">+ Add vendor</button></div>
+  </section>
+  </div>
+
+  <section class="card" id="timeline"><h2>🕐 Day-of timeline</h2>
+    <p class="sub">Your run-of-show for ${ev.date||'event day'} — add, reorder by time, and follow it on the day.</p>
+    ${ev.timeline.slice().sort((a,b)=>a.time.localeCompare(b.time)).map(mo=>`<div class="tl-item"><span class="tl-time">${esc(mo.time)}</span><b>${esc(mo.title)}</b><button class="x" style="margin-left:auto;background:none;border:0;color:var(--muted);font-size:18px" onclick="deleteMoment('${mo.id}')">×</button></div>`).join('')||'<p class="sub">No moments yet.</p>'}
+    <div class="row" style="margin-top:12px"><button class="btn btn-sm" onclick="openModal('momentModal')">+ Add moment</button></div>
+  </section>
+
+  <section class="card" id="ai"><h2>🤖 AI planner (Gemini)</h2>
+    <p class="sub">Paste your own Gemini API key once — it stays in this browser only and is sent only to Google when you ask. No key? The offline planner below still builds a full plan.</p>
+    <div class="row"><div><label>Gemini API key</label><input type="password" id="gemKey" placeholder="AIza…" value="${esc(localStorage.getItem(KEY_KEY)||'')}"></div>
+    <div style="flex:0 0 auto"><label>&nbsp;</label><button class="btn" onclick="saveKey()">Save key</button></div></div>
+    <div class="row" style="margin-top:12px"><button class="btn" onclick="generateAI()">✨ Generate full AI plan</button>
+    <button class="btn-ghost btn" onclick="generateOffline()">📋 Offline plan (no key)</button></div>
+    <div class="ai-box" id="aiOut">${ev.aiPlan?esc(ev.aiPlan):''}</div>
+    <p class="sub">Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>. AI answers can be wrong — check prices and dates before booking.</p>
+  </section>
+  <footer>GatherUp · Original build, inspired by the event-planner idea · No login · Data stays in your browser</footer>`;
+  save();
+}
+function donutSVG(ev){
+  const total=catActual(ev); const R=54, C=2*Math.PI*R; let offset=0;
+  if(!total) return `<svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="${R}" fill="none" stroke="var(--surface2)" stroke-width="18"/><text x="70" y="74" text-anchor="middle" fill="var(--muted)" font-size="13">No spend yet</text></svg>`;
+  const segs=CATS.map((c,i)=>{const v=ev.budgetCats[c].actual||0; if(!v) return ''; const frac=v/total, len=frac*C;
+    const s=`<circle cx="70" cy="70" r="${R}" fill="none" stroke="${CAT_COLORS[i]}" stroke-width="18" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-offset}" transform="rotate(-90 70 70)"/>`;
+    offset+=len; return s;}).join('');
+  return `<svg width="140" height="140" viewBox="0 0 140 140"><circle cx="70" cy="70" r="${R}" fill="none" stroke="var(--surface2)" stroke-width="18"/>${segs}<text x="70" y="66" text-anchor="middle" fill="var(--text)" font-size="15" font-weight="700">${inr(total)}</text><text x="70" y="84" text-anchor="middle" fill="var(--muted)" font-size="11">spent</text></svg>`;
+}
+
+// ---------- actions ----------
+function openModal(id){$(id).classList.add('open')}
+function closeModal(id){$(id).classList.remove('open')}
+function setActive(id){state.activeId=id;save();render()}
+function openEventDialog(edit){
+  const ev=edit?active():null; editingId=edit&&ev?ev.id:null;
+  $('eventModalTitle').textContent=edit?'Edit event':'New event';
+  $('fName').value=ev?ev.name:''; $('fKind').value=ev?ev.kind:'Birthday';
+  $('fDate').value=ev?ev.date:new Date(Date.now()+14*864e5).toISOString().slice(0,10);
+  $('fLocation').value=ev?ev.location:''; $('fBudget').value=ev?ev.budget:50000; $('fGuests').value=ev?ev.expectedGuests:50;
+  openModal('eventModal');
+}
+function saveEventDialog(){
+  const name=$('fName').value.trim(), kind=$('fKind').value, date=$('fDate').value, loc=$('fLocation').value.trim();
+  const budget=Number($('fBudget').value)||0, guests=Number($('fGuests').value)||0;
+  if(editingId){const ev=state.events.find(e=>e.id===editingId); if(ev){ev.name=name||ev.name;ev.kind=kind;ev.date=date;ev.location=loc;ev.budget=budget;ev.expectedGuests=guests;}}
+  else{const ev=makeEvent(name,kind,date,loc,budget,guests); state.events.push(ev); state.activeId=ev.id;}
+  editingId=null; closeModal('eventModal'); save(); render(); toast('Event saved ✅');
+}
+function deleteEvent(id){
+  if(!confirm('Delete this event? This cannot be undone.'))return;
+  state.events=state.events.filter(e=>e.id!==id);
+  if(state.activeId===id) state.activeId=state.events[0]?state.events[0].id:null;
+  save(); render(); toast('Event deleted');
+}
+function toggleTask(id){const ev=active();const t=ev.tasks.find(x=>x.id===id);if(t){t.done=!t.done;save();render()}}
+function deleteTask(id){const ev=active();ev.tasks=ev.tasks.filter(t=>t.id!==id);save();render()}
+function saveTask(){const ev=active();const title=$('tTitle').value.trim();if(!title){toast('Type a task first');return}
+  ev.tasks.push({id:uid(),title,dueDays:Number($('tDue').value)||0,priority:$('tPriority').value,done:false});
+  $('tTitle').value=''; closeModal('taskModal'); save(); render(); toast('Task added ✅')}
+function setCat(cat,field,val){const ev=active();if(!ev.budgetCats[cat])ev.budgetCats[cat]={planned:0,actual:0};ev.budgetCats[cat][field]=Math.max(0,Number(val)||0);save();render()}
+function toggleVendor(id){const ev=active();const v=ev.vendors.find(x=>x.id===id);if(v){v.booked=!v.booked;save();render()}}
+function deleteVendor(id){const ev=active();ev.vendors=ev.vendors.filter(v=>v.id!==id);save();render()}
+function saveVendor(){const ev=active();const name=$('vName').value.trim();if(!name){toast('Type a vendor name first');return}
+  ev.vendors.push({id:uid(),name,cat:$('vCat').value,cost:Number($('vCost').value)||0,booked:false});
+  $('vName').value=''; closeModal('vendorModal'); save(); render(); toast('Vendor added ✅')}
+function saveGuest(){const ev=active();const name=$('gName').value.trim();if(!name){toast('Type a guest name first');return}
+  ev.guests.push({id:uid(),name,rsvp:$('gRsvp').value,meal:$('gMeal').value});
+  $('gName').value=''; closeModal('guestModal'); save(); render(); toast('Guest added ✅')}
+function setRsvp(id,val){const ev=active();const g=ev.guests.find(x=>x.id===id);if(g){g.rsvp=val;save();render()}}
+function deleteGuest(id){const ev=active();ev.guests=ev.guests.filter(g=>g.id!==id);save();render()}
+function saveMoment(){const ev=active();const title=$('mTitle').value.trim();if(!title){toast('Type a title first');return}
+  ev.timeline.push({id:uid(),time:$('mTime').value||'18:00',title});
+  $('mTitle').value=''; closeModal('momentModal'); save(); render(); toast('Moment added ✅')}
+function deleteMoment(id){const ev=active();ev.timeline=ev.timeline.filter(m=>m.id!==id);save();render()}
+function copyInvite(){
+  const ev=active(); if(!ev)return;
+  const txt=`You're invited! 🎉\n${ev.name} — ${ev.kind}\n📅 ${ev.date} · 📍 ${ev.location||'venue to be shared'}\nPlease reply Yes / Maybe / No. Hope you can make it!`;
+  copyText(txt,'Invite message copied 📋');
+}
+function copyText(txt,msg){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast(msg)).catch(()=>fallbackCopy(txt,msg));}
+  else fallbackCopy(txt,msg);
+}
+function fallbackCopy(txt,msg){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast(msg)}catch(e){toast('Copy failed — select the text manually')}ta.remove()}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',cur);
+  try{localStorage.setItem('gatherup_theme',cur)}catch(e){}
+}
+function exportAll(){
+  const blob=new Blob([JSON.stringify(state.events,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='gatherup-events.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('Exported ✅');
+}
+function importAll(e){
+  const f=e.target.files&&e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const arr=JSON.parse(r.result); if(!Array.isArray(arr))throw 0;
+    let added=0; arr.forEach(raw=>{const ev=sanitizeEvent(raw);if(ev&&!state.events.some(x=>x.id===ev.id)){state.events.push(ev);added++}});
+    if(added)state.activeId=state.events[state.events.length-1].id;
+    save(); render(); toast('Imported '+added+' event(s) ✅');
+  }catch(err){toast('That file is not a valid GatherUp export')}};
+  r.readAsText(f); e.target.value='';
+}
+function shareEvent(){
+  const ev=active(); if(!ev)return;
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify(ev))));
+  const base=(location.href||(location.origin||'')+(location.pathname||'')).split('#')[0];
+  const url=base+'#e='+code;
+  copyText(url,'Shareable link copied 🔗 — anyone opening it gets this event');
+}
+function loadFromHash(){
+  if(!location.hash.startsWith('#e='))return false;
+  try{const ev=sanitizeEvent(JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3))))));
+    if(ev){ev.id=uid(); state.events.push(ev); state.activeId=ev.id; save(); history.replaceState(null,'',location.pathname); toast('Shared event added ✅'); return true;}
+  }catch(e){toast('That share link could not be read')}
+  return false;
+}
+// ---------- AI ----------
+function saveKey(){const k=$('gemKey').value.trim(); if(!k){toast('Paste a key first');return}
+  localStorage.setItem(KEY_KEY,k); toast('Gemini key saved on this device ✅')}
+function offlinePlan(ev){
+  const themes=OFFLINE_THEMES[ev.kind]||OFFLINE_THEMES['Other celebration'];
+  const perGuest=ev.expectedGuests?Math.round(ev.budget/ev.expectedGuests):0;
+  const topCats=Object.entries(ev.budgetCats).sort((a,b)=>b[1].planned-a[1].planned).slice(0,3).map(([c,b])=>`• ${c}: ${inr(b.planned)}`).join('\n');
+  return `OFFLINE PLAN — ${ev.name} (${ev.kind})\nGenerated on-device, no key needed.\n\n🎨 Theme ideas (pick one):\n1. ${themes[0]}\n2. ${themes[1]}\n3. ${themes[2]}\n\n📅 ${ev.date||'Date TBC'} · 📍 ${ev.location||'Venue TBC'} · ${ev.expectedGuests} guests · Budget ${inr(ev.budget)} (${inr(perGuest)} per guest)\n\n💰 Budget split (top 3):\n${topCats}\n\n✅ Do first (from your checklist):\n${ev.tasks.filter(t=>t.priority==='Must do').slice(0,5).map(t=>`• ${t.title} — due ${dueDate(ev,t)}`).join('\n')||'• Add your must-do tasks above'}\n\n🕐 Day-of flow:\n${ev.timeline.slice().sort((a,b)=>a.time.localeCompare(b.time)).map(m=>`• ${m.time} — ${m.title}`).join('\n')||'• Add moments in the timeline section'}\n\n👥 Guests: ${confirmedGuests(ev)} confirmed of ${ev.guests.length} listed. Aim to confirm everyone 3 days before the event.\n\nTip: paste a Gemini key above for a tailored plan with a full schedule, theme details and a shopping list.`;
+}
+function generateOffline(){const ev=active();if(!ev)return;ev.aiPlan=offlinePlan(ev);save();render();toast('Offline plan ready 📋')}
+async function generateAI(){
+  const ev=active();if(!ev)return;
+  const key=(localStorage.getItem(KEY_KEY)||'').trim();
+  const box=$('aiOut');
+  if(!key){box.textContent='No Gemini key saved — showing the offline plan instead. Paste a key above for a live AI plan.';generateOffline();return;}
+  box.textContent='🤖 Gemini is planning…';
+  const prompt=`You are an expert event planner in India. Plan this event in detail:\nEvent: ${ev.name} (${ev.kind})\nDate: ${ev.date} · Location: ${ev.location||'not set'} · Guests: ${ev.expectedGuests} (confirmed ${confirmedGuests(ev)}) · Budget: ₹${ev.budget}\nGive: 1) 3 theme ideas with colours, 2) a day-of schedule with times, 3) a checklist with when to do each task, 4) a budget split in rupees, 5) 3 money-saving tips. Keep it practical, short lines, no long paragraphs.`;
+  try{
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent?key='+encodeURIComponent(key),
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    if(!res.ok) throw new Error('Gemini error '+res.status);
+    const data=await res.json();
+    const txt=data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts?data.candidates[0].content.parts.map(p=>p.text).join(''):'No answer returned.';
+    ev.aiPlan='🤖 GEMINI PLAN (gemini-pro-latest)\n\n'+txt; save(); render(); toast('AI plan ready ✨');
+  }catch(e){box.textContent='⚠️ Gemini could not answer ('+e.message+'). Showing the offline plan instead.';generateOffline();}
+}
+// ---------- init ----------
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open'))});
+(function init(){
+  try{const th=localStorage.getItem('gatherup_theme');if(th)document.documentElement.setAttribute('data-theme',th)}catch(e){}
+  load();
+  if(!loadFromHash() && !state.events.length){
+    const demo=makeEvent("Aisha's 21st Birthday",'Birthday',new Date(Date.now()+14*864e5).toISOString().slice(0,10),'Ludhiana',50000,80);
+    demo.guests=[{id:uid(),name:'Rohan Sharma',rsvp:'Yes',meal:'Veg'},{id:uid(),name:'Simran Kaur',rsvp:'Yes',meal:'Non-veg'},{id:uid(),name:'Arjun Mehta',rsvp:'Maybe',meal:'Veg'},{id:uid(),name:'Neha Gupta',rsvp:'No',meal:'Veg'}];
+    demo.budgetCats['Food & Drinks'].actual=12000; demo.budgetCats['Decor'].actual=4500; demo.vendors[0].booked=true;
+    demo.tasks[0].done=true; demo.tasks[1].done=true;
+    state.events.push(demo); state.activeId=demo.id;
+  }
+  if(!active()&&state.events.length)state.activeId=state.events[0].id;
+  render();
+})();
+</script>
+</body>
+</html>
